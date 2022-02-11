@@ -23,7 +23,7 @@ def main(argv):
     projection = Projection(screen, width, height, fig)
 
     pygame.font.init()
-    text = pygame.font.SysFont('Comic Sans MS', 20)
+    text = pygame.font.SysFont('calibri', 20)
     msg = "Use arrow keys to interact with X and Y rotations"
     msg2 = "Hold Spacebar + arrow keys to rotate Z axis"
     msg3 = "Use the scroll wheel to scale the figure"
