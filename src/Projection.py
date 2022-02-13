@@ -1,11 +1,16 @@
 import pygame
 import numpy as np
+from src.Camera import Camera
+from src.Rotations import *
 
 class Projection:
     def __init__(self, screen, w, h, fig):
         self.screen = screen
         self.center = ((w/2), (h/2))
-
+        self.isometric = False
+        self.camera = Camera()
+        self.focus = 200
+        
         self.x_angle = 0.0
         self.y_angle = 0.0
         self.z_angle = 0.0
@@ -16,26 +21,7 @@ class Projection:
         self.figure = fig
         self.fig_edges = np.empty((len(fig), 2))
 
-    def Get_Rotation_X(self, theta):
-        return np.array([
-            [1, 0, 0],
-            [0, np.cos(theta), -np.sin(theta)],
-            [0, np.sin(theta),  np.cos(theta)]
-        ])
-
-    def Get_Rotation_Y(self, theta):
-        return np.array([
-            [np.cos(theta),  0, np.sin(theta)],
-            [0, 1, 0],
-            [-np.sin(theta), 0, np.cos(theta)],
-        ])
-
-    def Get_Rotation_Z(self, theta):
-        return np.array([
-            [np.cos(theta), -np.sin(theta), 0],
-            [np.sin(theta), np.cos(theta), 0],
-            [0 , 0, 1]
-        ])
+    
 
     def Handle_Input(self):
         key = pygame.key.get_pressed()
@@ -64,9 +50,28 @@ class Projection:
             rotation = np.dot(self.Ry, rotation) # y rotation
             rotation = np.dot(self.Rz, rotation) # z rotation
 
-            # getting x and y coordinates
-            x = int(rotation[0] * self.scale) + self.center[0]
-            y = int(rotation[1] * self.scale) + self.center[1]
+            # getting X, Y and Z coordinates
+            x = int(rotation[0] * self.scale)
+            y = int(rotation[1] * self.scale)
+            z = int(rotation[2] * self.scale)
+
+            # correcting X,Y and Z respect to the camera
+            x -= int(self.camera.x * self.scale)
+            y -= int(self.camera.y * self.scale)
+            z -= int(self.camera.z * self.scale)
+
+
+            # setting the camera rendering
+            if not self.isometric:
+                try:
+                    f = self.focus / z
+                except:
+                    f = self.focus / 0.1
+            else:
+                f = 1
+
+            x = (x * f) + self.center[0]
+            y = (y * f) + self.center[1]
 
             # update edges coordinates
             self.fig_edges[i][0] = x
@@ -92,12 +97,13 @@ class Projection:
 
     def Update(self):
         # Getting the x, y and z rotation matrices
-        self.Rx = self.Get_Rotation_X(self.x_angle)
-        self.Ry = self.Get_Rotation_Y(self.y_angle)
-        self.Rz = self.Get_Rotation_Z(self.z_angle)
+        self.Rx = Get_Rotation_X(self.x_angle)
+        self.Ry = Get_Rotation_Y(self.y_angle)
+        self.Rz = Get_Rotation_Z(self.z_angle)
 
         # User input
         self.Handle_Input()
+        self.camera.Update()
 
         # Drawing
         self.Draw_Vertices()

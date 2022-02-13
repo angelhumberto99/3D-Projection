@@ -8,6 +8,22 @@ def Get_Figure_Vertices(filename):
     df = pd.read_csv(filename)
     return np.array([df['x'], df['y'], df['z']]).transpose()
 
+def Handle_Info(screen, txt_surf, text):
+    msgs = [
+        "Arrow keys: X and Y rotation",
+        "Space + Arrow left or right: Z rotation",
+        "W: foreward",
+        "S: backward",
+        "A: left",
+        "D: right",
+        "J: up",
+        "L: down",
+        "I: toggle isometric and perspective camera"
+    ] 
+    for i, v in enumerate(msgs):
+        txt_surf = text.render(v, False, "white")
+        screen.blit(txt_surf, (20, 30*(i+1)))
+
 def main(argv):
     pygame.init()
 
@@ -24,25 +40,26 @@ def main(argv):
 
     pygame.font.init()
     text = pygame.font.SysFont('calibri', 20)
-    msg = "Use arrow keys to interact with X and Y rotations"
-    msg2 = "Hold Spacebar + arrow keys to rotate Z axis"
-    msg3 = "Use the scroll wheel to scale the figure"
+    msg = "Press Tab to show info"
     txt_surf = text.render(msg, False, "white")
-    txt_surf2 = text.render(msg2, False, "white")
-    txt_surf3 = text.render(msg3, False, "white")
+    show_info = False
     
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-            elif event.type == pygame.MOUSEWHEEL:
-                projection.scale += event.y
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_i:
+                    projection.isometric = not projection.isometric
+                if event.key == pygame.K_TAB:
+                    show_info = not show_info
 
         screen.fill("black") 
-        screen.blit(txt_surf, (20, 10))
-        screen.blit(txt_surf2, (20, 35))
-        screen.blit(txt_surf3, (20, 60))
+        if show_info:
+            Handle_Info(screen, txt_surf, text)
+        else:
+            screen.blit(txt_surf, (20, 30))
         projection.Update()
         pygame.display.update()
         clock.tick(60)
@@ -52,7 +69,7 @@ if __name__ == "__main__":
     if len(argv) > 1:
         main(argv[1])
     else:
-        print("execute as python main.py <fig.csv>")
+        print("be sure to execute: 'python main.py <fig.csv>'")
         
 
     
