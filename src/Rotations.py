@@ -20,3 +20,7 @@ def Get_Rotation_Z(theta):
         [np.sin(theta), np.cos(theta), 0],
         [0 , 0, 1]
     ])
+
+def Get_Camera_Rotation(x, y, angle):
+    return (x*np.cos(angle) - y*np.sin(angle),
+            y*np.cos(angle) + x*np.sin(angle))

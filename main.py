@@ -16,9 +16,10 @@ def Handle_Info(screen, txt_surf, text):
         "S: backward",
         "A: left",
         "D: right",
-        "J: up",
-        "L: down",
-        "I: toggle isometric and perspective camera"
+        "Spacebar: up",
+        "Left shift: down",
+        "I: toggle isometric and perspective camera",
+        "ESC: enables cursor"
     ] 
     for i, v in enumerate(msgs):
         txt_surf = text.render(v, False, "white")
@@ -52,8 +53,11 @@ def main(argv):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_i:
                     projection.isometric = not projection.isometric
-                if event.key == pygame.K_TAB:
+                elif event.key == pygame.K_TAB:
                     show_info = not show_info
+                elif event.key == pygame.K_ESCAPE:
+                    projection.lock_mouse = not projection.lock_mouse
+                    pygame.mouse.set_visible(not projection.lock_mouse)
 
         screen.fill("black") 
         if show_info:

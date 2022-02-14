@@ -20,8 +20,8 @@ class Projection:
 
         self.figure = fig
         self.fig_edges = np.empty((len(fig), 2))
-
-    
+        self.lock_mouse = True
+        pygame.mouse.set_visible(False)    
 
     def Handle_Input(self):
         key = pygame.key.get_pressed()
@@ -50,26 +50,25 @@ class Projection:
             rotation = np.dot(self.Ry, rotation) # y rotation
             rotation = np.dot(self.Rz, rotation) # z rotation
 
-            # getting X, Y and Z coordinates
-            x = int(rotation[0] * self.scale)
-            y = int(rotation[1] * self.scale)
-            z = int(rotation[2] * self.scale)
+            # getting X, Y and Z coordinates corrected by the camera position
+            x = int((rotation[0] - self.camera.x) * self.scale)
+            y = int((rotation[1] - self.camera.y) * self.scale)
+            z = int((rotation[2] - self.camera.z) * self.scale)
 
-            # correcting X,Y and Z respect to the camera
-            x -= int(self.camera.x * self.scale)
-            y -= int(self.camera.y * self.scale)
-            z -= int(self.camera.z * self.scale)
-
+            # correcting coordinates respect to camera rotation
+            x, z = Get_Camera_Rotation(x, z, self.camera.x_rotation)
+            y, z = Get_Camera_Rotation(y, z, self.camera.y_rotation)
 
             # setting the camera rendering
             if not self.isometric:
-                try:
+                if z <= 0:
+                    f = z  
+                else:
                     f = self.focus / z
-                except:
-                    f = self.focus / 0.1
             else:
                 f = 1
 
+            # applying perspective to the object rendered on screen
             x = (x * f) + self.center[0]
             y = (y * f) + self.center[1]
 
@@ -96,6 +95,9 @@ class Projection:
 
 
     def Update(self):
+        if self.lock_mouse:
+            pygame.mouse.set_pos(self.center)
+
         # Getting the x, y and z rotation matrices
         self.Rx = Get_Rotation_X(self.x_angle)
         self.Ry = Get_Rotation_Y(self.y_angle)
